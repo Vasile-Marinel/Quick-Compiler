@@ -1,0 +1,23 @@
+program ::= ( defVar | defFunc | block )* FINISH 
+defVar ::= VAR ID COLON baseType SEMICOLON 
+baseType ::= TYPE_INT | TYPE_REAL | TYPE_STR 
+defFunc ::= FUNCTION ID LPAR funcParams? RPAR COLON baseType defVar* block END 
+block ::= instr+ 
+funcParams ::= funcParam ( COMMA funcParam )* 
+funcParam ::= ID COLON baseType 
+instr ::= expr? SEMICOLON 
+        | IF LPAR expr RPAR block ( ELSE block )? END 
+        | RETURN expr SEMICOLON 
+        | WHILE LPAR expr RPAR block END 
+expr ::= exprLogic 
+exprLogic ::= exprAssign ( ( AND | OR ) exprAssign )* 
+exprAssign ::= ( ID ASSIGN )? exprComp 
+exprComp ::= exprAdd ( ( LESS | EQUAL ) exprAdd )? 
+exprAdd ::= exprMul ( ( ADD | SUB ) exprMul )* 
+exprMul ::= exprPrefix ( ( MUL | DIV ) exprPrefix )* 
+exprPrefix ::= ( SUB | NOT )? factor 
+factor ::= INT 
+        | REAL 
+        | STR 
+        | LPAR expr RPAR 
+        | ID ( LPAR ( expr ( COMMA expr )* )? RPAR )?

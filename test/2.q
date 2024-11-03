@@ -11,5 +11,4 @@ while
 >=
 100
 int
-_ciprian23
 "string"

@@ -29,7 +29,7 @@ const char* Codes_String[] = {
 		"INT", "REAL", "STR"
 };
 
-Token tokens[MAX_TOKENS];
+Token tokens[MAX_TOKENS];		// the array of tokens
 int nTokens;
 
 int line=1;		// the current line in the input file
@@ -38,7 +38,7 @@ int line=1;		// the current line in the input file
 // sets its code and line
 Token *addTk(int code){
 	if(nTokens==MAX_TOKENS)err("too many tokens");
-	Token *tk=&tokens[nTokens];
+	Token *tk=&tokens[nTokens];		//cu tk parcurgem vectorul de tokenuri
 	tk->code=code;
 	tk->line=line;
 	nTokens++;
@@ -49,28 +49,11 @@ Token *addTk(int code){
     return Codes_String[cod];  // Return the corresponding string
 }
 
-// Function to check if a string is a valid integer
-int isInteger(const char* pch) {
-	int number = *pch;
-    printf("number1 %d", number);
-    // Check if the rest of the characters are digits
-    while (*pch) {
-		pch++;
-        if (isdigit(*pch)) {
-            // If the character is a digit, add it to the current number
-            number = number * 10 + (*pch - '0');  // Build multi-digit number
-			printf("number2 %d", number);
-        }
-		else break;
-    } 
-    return number;  // All characters are digits
-}
-
 // copy in the dst buffer the string between [begin,end)
 char *copyn(char *dst,const char *begin,const char *end){
-	char *p=dst;
+	char *p=dst;	//p ia adresa lui dst
 	if(end-begin>MAX_STR)err("string too long");
-	while(begin!=end)*p++=*begin++;
+	while(begin!=end)*p++=*begin++;		//in p se copiaza caracterele de la begin la end caracter cu caracter
 	*p='\0';
 	return dst;
 	}
@@ -149,24 +132,24 @@ void tokenize(const char *pch){ // pch = Pointer Current Character
 					}
 				break;
 				case '#':
-					for(start=pch++;isalnum(*pch)||*pch=='_' || *pch == ' ';pch++){}
+					for(start=pch++;isalnum(*pch)||*pch=='_' || *pch == ' ';pch++){}	//ignora comentariile
 				break;
 
-				case '\"':
+				case '\"':	//cazul in care avem un string
 				pch++;
-					for(start=pch++;((isalnum(*pch) || ispunct(*pch)) && *pch != '\"');pch++){}
+					for(start=pch++;(*pch!='"');pch++){}		//cat timp gasim caractere alfanumerice sau de punctuatie si nu am ajuns la sfarsitul stringului
 					pch++;
-					char *text = copyn(buf,start,pch-1);
-					tk = addTk(STR);
-					strcpy(tk->Constante.text, text);
+					char *text = copyn(buf,start,pch-1);	//copiem in text caracterele de la start la pch-1
+					tk = addTk(STR);	//adaugam tokenul de tip string
+					strcpy(tk->Constante.text, text);		//copiem in tk->Constante.text textul
 				break;
 
 			default:
 
 			// TODO: 
-				if(isalpha(*pch)||*pch=='_'){
-					for(start=pch++;isalnum(*pch)||*pch=='_';pch++){}
-					char *text=copyn(buf,start,pch);
+				if(isalpha(*pch)||*pch=='_'){	//daca este litera sau _ atunci este un ID
+					for(start=pch++;isalnum(*pch)||*pch=='_';pch++){}	//cat timp gasim caractere alfanumerice sau _
+					char *text=copyn(buf,start,pch);	//copiem in text caracterele de la start la pch
 					// Daca este cuvant cheie dam un cod
 					// TODO: Adauga celelalte cuvinte cheie
 					if(strcmp(text,"int")==0)addTk(TYPE_INT);
@@ -180,20 +163,20 @@ void tokenize(const char *pch){ // pch = Pointer Current Character
 					else if(strcmp(text,"return")==0)addTk(RETURN);
 					else if(strcmp(text,"end")==0)addTk(END);
 					else{
-						tk = addTk(ID);
-						strcpy(tk->Constante.text,text);
+						tk = addTk(ID);	//daca nu este cuvant cheie atunci este un ID
+						strcpy(tk->Constante.text,text);	//copiem in tk->Constante.text textul
 						}
 					}
-					else if (isdigit(*pch)){
-						for(start=pch++;isdigit(*pch) && *pch != '.';pch++){}
+					else if (isdigit(*pch)){		//recunoastem numerele, Verifică dacă un token este un număr întreg sau real. La întâlnirea unui . după cifre, este considerat număr real.
+						for(start=pch++;isdigit(*pch) && *pch != '.';pch++){}	//cat timp gasim cifre si nu am ajuns la punct
 						
-						char *text=copyn(buf,start,pch);
-						int num = atoi(text);
-						if(*pch == '.'){
-							for(start=pch++;isdigit(*pch);pch++){}
-							char *text=copyn(buf,start,pch);
-							double real = atof(text);
-							real += num;
+						char *text=copyn(buf,start,pch);	
+						int num = atoi(text);	//convertim textul in numar
+						if(*pch == '.'){		//daca am ajuns la punct
+							for(start=pch++;isdigit(*pch);pch++){}		//cat timp gasim cifre
+							char *text=copyn(buf,start,pch);	//copiem in text caracterele de la start la pch
+							double real = atof(text);	//convertim textul in numar real
+							real += num;	//adunam partea intreaga cu partea fractionara
 							tk = addTk(REAL);
 							tk->Constante.r=real;
 							break;

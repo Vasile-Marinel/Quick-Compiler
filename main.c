@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "utils.h"
 #include "lexer.h"
+#include "parser.h"
 
 int main()
 {
@@ -9,8 +10,8 @@ int main()
     //puts(buffer);
     tokenize(buffer);
     showTokens();
+    //parse();
     free(buffer);
-
 
     return 0;
 }

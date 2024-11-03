@@ -15,5 +15,5 @@ while(i<10)
     i=i+1;
     end
 
-puts("PI=");
+puts("PI =");
 putr(3.14159);
