@@ -4,6 +4,7 @@
 #include <stdarg.h>
 
 #include "lexer.h"
+#include "ad.h"
 
 int iTk;	// the iterator in tokens
 Token* consumed;	// the last consumed token
@@ -290,8 +291,15 @@ bool funcParam() {
 	int start = iTk;
 	puts("#funcParam");
 	if (consume(ID)) {
+		const char *name=consumed->Constante.text;
+		Symbol *s=searchInCurrentDomain(name);
+		if(s)tkerr("symbol redefinition: %s",name);
+		s=addSymbol(name,KIND_ARG);
+		Symbol *sFnParam=addFnArg(crtFn,name);
 		if (consume(COLON)) {
 			if (baseType()) {
+				s->type=ret.type;
+				sFnParam->type=ret.type;
 				return true;
 			}
 			else tkerr("tip de data al parametrului invalid");
@@ -325,14 +333,23 @@ bool defFunc() {
 	puts("#defFunc");
 	if (consume(FUNCTION)) {
 		if (consume(ID)) {
+			const char *name=consumed->Constante.text;
+			Symbol *s=searchInCurrentDomain(name);
+			if(s)tkerr("symbol redefinition: %s",name);
+			crtFn=addSymbol(name,KIND_FN);
+			crtFn->args=NULL;
+			addDomain();
 			if (consume(LPAR)) {
 				if (funcParams()) {}
 				if (consume(RPAR)) {
 					if (consume(COLON)) {
 						if (baseType()) {
+							crtFn->type=ret.type;
 							while (defVar()) {}
 							if (block()) {
 								if (consume(END)) {
+									delDomain();
+									crtFn=NULL;
 									return true;
 								}
 								else tkerr("functia nu este inchisa");
@@ -359,6 +376,11 @@ bool defVar() {
 	puts("#defVar");
 	if (consume(VAR)) {
 		if (consume(ID)) {
+			const char *name=consumed->Constante.text;
+			Symbol *s=searchInCurrentDomain(name);
+			if(s)tkerr("symbol redefinition: %s",name);
+			s=addSymbol(name,KIND_VAR);
+			s->local=crtFn!=NULL;
 			if (consume(COLON)) {
 				if (baseType()) {
 					if (consume(SEMICOLON)) {
@@ -379,6 +401,7 @@ bool defVar() {
 // program ::= ( defVar | defFunc | block )* FINISH
 bool program() {
 	puts("#program");
+	addDomain(); // creates the global domain
 	for (;;) {
 		if (defVar()) {}
 		else if (defFunc()) {}
@@ -386,6 +409,7 @@ bool program() {
 		else break;
 	}
 	if (consume(FINISH)) {
+		delDomain(); // deletes the global domain
 		return true;
 	}
 	else tkerr("syntax error");
