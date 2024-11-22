@@ -6,7 +6,7 @@
 #include "lexer.h"
 #include "ad.h"
 
-int iTk;	// the iterator in tokens
+int iTk;	// the iterator in tokens (iterator in vectorul de atomi)
 Token* consumed;	// the last consumed token
 
 // same as err, but also prints the line of the current token
@@ -20,10 +20,10 @@ void tkerr(const char* fmt, ...) {
 	exit(EXIT_FAILURE);
 }
 
-bool consume(int code) {
+bool consume(int code) {	//pentru atomii lexicali
 	//printf("consume(%s)", tkCodeName(code));
 	if (tokens[iTk].code == code) {
-		consumed = &tokens[iTk++];
+		consumed = &tokens[iTk++];		//consumul atomului
 		//printf(" => consumed\n");
 		return true;
 	}
@@ -33,7 +33,7 @@ bool consume(int code) {
 
 
 // baseType ::= TYPE_INT | TYPE_REAL | TYPE_STR
-bool baseType() {
+bool baseType() {		//Verifică succesiv dacă atomul curent este TYPE_INT, TYPE_REAL sau TYPE_STR.
 	puts("#baseType");
 	if (consume(TYPE_INT)) {
 		return true;
@@ -60,7 +60,7 @@ bool expr();
 bool factor() {
 	int start = iTk;
 	puts("#factor");
-	if (consume(INT) || consume(REAL) || consume(STR)) {
+	if (consume(INT) || consume(REAL) || consume(STR)) {		//Verifică dacă factor este un număr (INT, REAL), un șir (STR), sau un identificator (ID).
 		return true;
 	}
 	else if (consume(LPAR)) {
@@ -288,7 +288,7 @@ bool block() {
 
 // funcParam ::= ID COLON baseType
 bool funcParam() {
-	int start = iTk;
+	int start = iTk;	//// se salvează poziția inițialăa iteratorului
 	puts("#funcParam");
 	if (consume(ID)) {
 		const char *name=consumed->Constante.text;
@@ -406,7 +406,7 @@ bool program() {
 		if (defVar()) {}
 		else if (defFunc()) {}
 		else if (block()) {}
-		else break;
+		else break;		//// dacă nu se poate consuma nimic la iterația curentă, se iese din buclă
 	}
 	if (consume(FINISH)) {
 		delDomain(); // deletes the global domain
